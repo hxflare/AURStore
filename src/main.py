@@ -58,6 +58,12 @@ def search_for():
                     def open_description():
                         tabs.set("Description")
                         html=descparse.getHtml(pkg["URL"])
+                        
+                        htmltext=HTMLLabel(tabs.tab("Description"),html=html,)
+                        if htmltext.winfo_exists():
+                            htmltext.set_html(html)
+                        else:
+                            htmltext.pack(fill=tk.BOTH,expand=True)
                     resultFrame = cutk.CTkFrame(
                         searchResults,
                         height=100,
