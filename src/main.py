@@ -5,7 +5,8 @@ from PIL import Image
 import os
 from tkhtmlview import HTMLLabel
 import markdown
-
+from deschandler import Desc
+descparse=Desc()
 cutk.set_appearance_mode("system")
 cutk.set_default_color_theme("blue")
 # warning: ass code below
@@ -38,11 +39,7 @@ except:
 def setTab(value):
     print(f"opened tab: {value}")
     tabs.set(value)
-#open the README.md
-def open_md(url):
-    get = requests.get(f"{url}/README.md").raise_for_status()
-    content = get.text
-    html_content = markdown.markdown(content)
+
 # actual search
 def searchFor():
     query = searchEntry.get()
@@ -58,6 +55,7 @@ def searchFor():
             data["results"].sort(key=lambda pkg: pkg.get("Popularity", 0), reverse=True)
             for pkg in data["results"]:
                 if ammount <= 100:
+                    print(descparse.getHtml(pkg["URL"]))
                     resultFrame = cutk.CTkFrame(
                         searchResults,
                         height=100,
@@ -122,7 +120,7 @@ searchEntry = cutk.CTkEntry(
 searchBar.pack(side=tk.RIGHT,anchor=tk.SE,padx=40, pady=10,)
 searchEntry.pack(side=tk.LEFT, padx=5, pady=5)
 
-icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "searchicon.png")
+icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets/searchicon.png")
 search_icon = cutk.CTkImage(light_image=Image.open(icon_path).convert("RGBA"), size=(20, 20))
 searchButton = cutk.CTkButton(
     searchBar,
