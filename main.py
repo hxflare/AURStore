@@ -140,6 +140,10 @@ searchButton.pack(side=tk.LEFT, padx=5, pady=5)
 searchResults.pack(padx=20, pady=20, side=tk.RIGHT, anchor=tk.NE, fill=tk.BOTH, expand=True)
 searchResults.bind_all("<Button-4>", on_mousewheel)
 searchResults.bind_all("<Button-5>", on_mousewheel)
+# description tab
+menuBardesc = cutk.CTkFrame(tabs.tab("Description"), height=50,fg_color="#363636")
+menuBardesc.pack(side=tk.TOP, fill=tk.X,)
+
 #start with the search tab
 tabs.set("Search")
 ui.mainloop()
