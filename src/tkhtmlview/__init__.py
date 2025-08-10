@@ -5,16 +5,15 @@ import sys
 import tkinter as tk
 from tkhtmlview import html_parser
 from tkhtmlview.utils import RenderHTML
-
+import customtkinter as cutk
 VERSION = "0.3.1"
-
 
 class _ScrolledText(tk.Text):
     def __init__(self, master=None, **kw):
-        self.frame = tk.Frame(master)
-
-        self.vbar = tk.Scrollbar(self.frame)
-        self.xscroll = tk.Scrollbar(self.frame, orient="horizontal")
+        self.frame = cutk.CTkFrame(master,corner_radius=10)
+        
+        self.vbar = cutk.CTkScrollbar(self.frame)
+        self.xscroll = cutk.CTkScrollbar(self.frame, orientation="horizontal")
 
         if "xscroll" in kw:
             # self.vbar.orient = "vertical"
@@ -27,7 +26,7 @@ class _ScrolledText(tk.Text):
         kw["yscrollcommand"] = self.vbar.set
         self.vbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.vbar["command"] = self.yview
-
+        
         tk.Text.__init__(self, self.frame, **kw)
         self.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 

@@ -58,12 +58,7 @@ def search_for():
                     def open_description():
                         tabs.set("Description")
                         html=descparse.getHtml(pkg["URL"])
-                        
-                        htmltext=HTMLLabel(tabs.tab("Description"),html=html,)
-                        if htmltext.winfo_exists():
-                            htmltext.set_html(html)
-                        else:
-                            htmltext.pack(fill=tk.BOTH,expand=True)
+                        htmltext.set_html(html)                         
                     resultFrame = cutk.CTkFrame(
                         searchResults,
                         height=100,
@@ -170,7 +165,8 @@ tab_switcherdesc = cutk.CTkSegmentedButton(
     unselected_hover_color="#5a85e0"
 )
 tab_switcherdesc.pack(side=tk.LEFT,pady=15, padx=40)
-
+htmltext=HTMLLabel(tabs.tab("Description"),html="",background="#E0FFFA",)
+htmltext.pack(fill=tk.BOTH,expand=True,padx=20,pady=20)
 #start with the search tab
 tabs.set("Search")
 ui.mainloop()

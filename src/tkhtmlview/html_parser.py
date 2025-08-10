@@ -551,7 +551,7 @@ class HTMLTextParser(HTMLParser):
             if image:
                 width = image.size[0]
                 height = image.size[1]
-                resize = False
+                resize = True
                 if str(attrs[HTML.Attrs.WIDTH]).isdigit():
                     width = int(attrs[HTML.Attrs.WIDTH])
                     resize = True
@@ -559,7 +559,7 @@ class HTMLTextParser(HTMLParser):
                     height = int(attrs[HTML.Attrs.HEIGHT])
                     resize = True
                 if resize:
-                    image = image.resize((width, height), Image.Resampling.LANCZOS)
+                    image = image.resize((int(width/3), int(height/3)), Image.Resampling.LANCZOS)
                 self.images.append(ImageTk.PhotoImage(image))
                 self._w.image_create(tk.INSERT, image=self.images[-1])
 
