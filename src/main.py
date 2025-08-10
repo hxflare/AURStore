@@ -36,12 +36,12 @@ try:
 except:
     pass
 # open the tab
-def setTab(value):
+def set_tab(value):
     print(f"opened tab: {value}")
     tabs.set(value)
 
 # actual search
-def searchFor():
+def search_for():
     query = searchEntry.get()
     print(f"searching for: {query}")
     for child in searchResults.winfo_children():
@@ -55,7 +55,9 @@ def searchFor():
             data["results"].sort(key=lambda pkg: pkg.get("Popularity", 0), reverse=True)
             for pkg in data["results"]:
                 if ammount <= 100:
-                    print(descparse.getHtml(pkg["URL"]))
+                    def open_description():
+                        tabs.set("Description")
+                        html=descparse.getHtml(pkg["URL"])
                     resultFrame = cutk.CTkFrame(
                         searchResults,
                         height=100,
@@ -64,6 +66,15 @@ def searchFor():
                         fg_color="#636363"
                     )
                     download = cutk.CTkButton(resultFrame, text="download", fg_color="green")
+                    info=cutk.CTkButton(
+                        resultFrame,text="I",
+                        fg_color="orange",
+                        text_color="white",
+                        height=30,width=30,
+                        corner_radius=100,
+                        command=open_description,
+                        )
+                    info.pack(side=tk.RIGHT,padx=30)
                     resultFrame.pack(padx=10, pady=10, fill=tk.X)
                     result = cutk.CTkLabel(
                         master=resultFrame,
@@ -99,7 +110,7 @@ menuBar.pack(side=tk.TOP, fill=tk.X,)
 tab_switcher = cutk.CTkSegmentedButton(
     menuBar,
     values=["Search", "Installed", "Settings"],
-    command=setTab,
+    command=set_tab,
     corner_radius=10,
     unselected_hover_color="#5a85e0"
 )
@@ -126,7 +137,7 @@ searchButton = cutk.CTkButton(
     searchBar,
     image=search_icon,
     text="",
-    command=searchFor,
+    command=search_for,
     width=20,
     height=20,
     corner_radius=10,
@@ -139,8 +150,20 @@ searchResults.pack(padx=20, pady=20, side=tk.RIGHT, anchor=tk.NE, fill=tk.BOTH, 
 searchResults.bind_all("<Button-4>", on_mousewheel)
 searchResults.bind_all("<Button-5>", on_mousewheel)
 # description tab
+def go_back():
+    tabs.set("Search")
 menuBardesc = cutk.CTkFrame(tabs.tab("Description"), height=50,fg_color="#363636")
 menuBardesc.pack(side=tk.TOP, fill=tk.X,)
+back=cutk.CTkButton(menuBardesc,text="⬅️",command=go_back,width=40,height=40)
+back.pack(side=tk.LEFT,padx=10)
+tab_switcherdesc = cutk.CTkSegmentedButton(
+    menuBardesc,
+    values=["Search", "Installed", "Settings"],
+    command=set_tab,
+    corner_radius=10,
+    unselected_hover_color="#5a85e0"
+)
+tab_switcherdesc.pack(side=tk.LEFT,pady=15, padx=40)
 
 #start with the search tab
 tabs.set("Search")
