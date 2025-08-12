@@ -6,6 +6,7 @@ import os
 from tkhtmlview import HTMLLabel
 import markdown
 from deschandler import Desc
+import threading
 descparse=Desc()
 cutk.set_appearance_mode("system")
 cutk.set_default_color_theme("blue")
@@ -21,7 +22,7 @@ tabs.add("Description")
 tabs.add("Installed")
 tabs.add("Search")
 tabs.pack(fill=tk.BOTH, expand=True)
-# the tabview is a dumbass, have to remove the inbuilt segmentedbutton
+# the tabview is ass, have to remove the inbuilt segmentedbutton
 try:
     for child in tabs.winfo_children():
         if isinstance(child, cutk.CTkSegmentedButton):
@@ -39,11 +40,10 @@ except:
 def set_tab(value):
     print(f"opened tab: {value}")
     tabs.set(value)
-
 # actual search
 def search_for():
     query = searchEntry.get()
-    print(f"searching for: {query}")
+    print(f"searching for: {query}") 
     for child in searchResults.winfo_children():
         child.destroy()
     if query != "":
@@ -55,10 +55,24 @@ def search_for():
             data["results"].sort(key=lambda pkg: pkg.get("Popularity", 0), reverse=True)
             for pkg in data["results"]:
                 if ammount <= 100:
-                    def open_description():
+                    
+                    def open_description(url=pkg["URL"]):
                         tabs.set("Description")
-                        html=descparse.getHtml(pkg["URL"])
-                        htmltext.set_html(html)                         
+                        htmltext.set_html("") 
+                        progressbar=cutk.CTkProgressBar(
+                            tabs.tab("Description"),
+                            mode="indeterminate"
+                        )
+                        progressbar.pack()
+                        progressbar.start()
+                        ui.update_idletasks() 
+                        def load_html():
+                            html=html=descparse.getHtml(url)   
+                            ui.after(0, lambda: (
+                                htmltext.set_html(html),
+                                progressbar.destroy()
+                            ))
+                        threading.Thread(target=load_html, daemon=True).start()                    
                     resultFrame = cutk.CTkFrame(
                         searchResults,
                         height=100,
@@ -165,7 +179,7 @@ tab_switcherdesc = cutk.CTkSegmentedButton(
     unselected_hover_color="#5a85e0"
 )
 tab_switcherdesc.pack(side=tk.LEFT,pady=15, padx=40)
-htmltext=HTMLLabel(tabs.tab("Description"),html="",background="#E0FFFA",)
+htmltext=HTMLLabel(tabs.tab("Description"),html="",background="#636363",)
 htmltext.pack(fill=tk.BOTH,expand=True,padx=20,pady=20)
 #start with the search tab
 tabs.set("Search")
