@@ -7,6 +7,8 @@ from tkhtmlview import HTMLLabel
 import markdown
 from deschandler import Desc
 import threading
+import subprocess
+from pacman import PacmanHandler
 descparse=Desc()
 cutk.set_appearance_mode("system")
 cutk.set_default_color_theme("blue")
@@ -22,7 +24,9 @@ tabs.add("Description")
 tabs.add("Installed")
 tabs.add("Search")
 tabs.pack(fill=tk.BOTH, expand=True)
-# the tabview is ass, have to remove the inbuilt segmentedbutton
+maxammount=1000
+selectedHelper="yay"
+helperSpreadsheet={"yay": "-S"}
 try:
     for child in tabs.winfo_children():
         if isinstance(child, cutk.CTkSegmentedButton):
@@ -54,8 +58,11 @@ def search_for():
             ammount = 0
             data["results"].sort(key=lambda pkg: pkg.get("Popularity", 0), reverse=True)
             for pkg in data["results"]:
-                if ammount <= 100:
-                    
+                if ammount <= maxammount:
+                    def download_pkg(name=pkg["Name"]):
+                        print("downloading package "+name)
+                        commandOutput=subprocess.run([selectedHelper, helperSpreadsheet[selectedHelper],name],capture_output=True,text=True)
+                        print("command output: "+commandOutput.stdout)
                     def open_description(url=pkg["URL"]):
                         tabs.set("Description")
                         htmltext.set_html("") 
@@ -75,12 +82,19 @@ def search_for():
                         threading.Thread(target=load_html, daemon=True).start()                    
                     resultFrame = cutk.CTkFrame(
                         searchResults,
-                        height=100,
+                        height=70,
                         width=340,
                         corner_radius=10,
                         fg_color="#636363"
                     )
-                    download = cutk.CTkButton(resultFrame, text="download", fg_color="green")
+                    download = cutk.CTkButton(
+                        resultFrame, 
+                        text="D", 
+                        fg_color="green",
+                        command=download_pkg,
+                        height=30,
+                        width=30,
+                        corner_radius=100)
                     info=cutk.CTkButton(
                         resultFrame,text="I",
                         fg_color="orange",
@@ -89,7 +103,8 @@ def search_for():
                         corner_radius=100,
                         command=open_description,
                         )
-                    info.pack(side=tk.RIGHT,padx=30)
+                    info.pack(side=tk.BOTTOM,padx=30,anchor=tk.SE,pady=20)
+                    download.pack(side=tk.TOP,padx=30,anchor=tk.NE,pady=20)
                     resultFrame.pack(padx=10, pady=10, fill=tk.X)
                     result = cutk.CTkLabel(
                         master=resultFrame,
