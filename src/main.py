@@ -272,7 +272,7 @@ back=cutk.CTkButton(menuBardesc,text="⬅️",command=go_back,width=40,height=40
 back.pack(side=tk.LEFT,padx=10)
 tab_switcherdesc = cutk.CTkSegmentedButton(
     menuBardesc,
-    values=["Search", "Installed", "Settings"],
+    values=["Search", "Installed",],
     command=set_tab,
     corner_radius=10,
     unselected_hover_color="#5a85e0"
@@ -280,6 +280,19 @@ tab_switcherdesc = cutk.CTkSegmentedButton(
 tab_switcherdesc.pack(side=tk.LEFT,pady=15, padx=40)
 htmltext=HTMLLabel(tabs.tab("Description"),html="",background="#636363",)
 htmltext.pack(fill=tk.BOTH,expand=True,padx=20,pady=20)
+#installed tab
+packages=pacm.find_installed()
+menuBarinstall = cutk.CTkFrame(tabs.tab("Installed"), height=50,fg_color="#363636")
+menuBarinstall.pack(side=tk.TOP, fill=tk.X,)
+tab_switcherinstall = cutk.CTkSegmentedButton(
+    menuBarinstall,
+    values=["Search", "Installed", "Settings"],
+    command=set_tab,
+    corner_radius=10,
+    unselected_hover_color="#5a85e0"
+)
+installedResults = cutk.CTkScrollableFrame(tabs.tab("Installed"), width=400, height=100, label_text="Results:")
+installedResults.pack(padx=20, pady=20, side=tk.RIGHT, anchor=tk.NE, fill=tk.BOTH, expand=True)
 #start with the search tab
 tabs.set("Search")
 ui.mainloop()

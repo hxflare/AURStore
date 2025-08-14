@@ -18,4 +18,7 @@ class Desc:
         html_content=markdown.markdown(content)
         return html_content
     def getHtml(self,link):
-        return self.open_md(url=link)
+        if link.startswith("https://github.com/"):
+            return self.open_md(url=link)
+        else:
+            return "<h1>DESCRIPTION NOT FOUND</h1>"

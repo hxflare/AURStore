@@ -1,5 +1,6 @@
 import tarfile
 from pathlib import Path
+import subprocess
 
 class PacmanHandler():
     def __init__(self):
@@ -32,10 +33,31 @@ class PacmanHandler():
                             if query.lower() in pkgname.lower():
                                 found.append({"NAME":pkgname,"DESC":pkgdesc, "VERSION":pkgversion,"URL": pkgurl,"UNPARSED":content})
         return found
-"""
+    def parse_output(self,output):
+        packages=[]
+        for line in output.splitlines():
+            pkg={}
+            if not line.strip():
+                pkg={"NAME":pkgname,"VERSION":pkgversion,"DESCRIPTION":pkgdesc,"URL": pkgurl,}
+                packages.append(pkg)
+                continue
+            key,sep,value=line.partition(":")
+            key=key.strip()
+            value=value.strip()
+            if key=="Name":
+                print(f"found pkg {value}")
+                pkgname=value
+            elif key=="Version":
+                pkgversion=value
+            elif key=="Description":
+                pkgdesc=value
+            elif key=="URL":
+                pkgurl=value
+        return packages
+    def find_installed(self):
+        aur=self.parse_output(subprocess.run(["pacman","-Qmi"],capture_output=True,text=True).stdout)
+        pacman=self.parse_output(subprocess.run(["pacman","-Qei"],capture_output=True,text=True).stdout)
+        merged=pacman+aur
+        return merged
 pac=PacmanHandler()
-result=pac.search_db(input("you are searching for: "))
-print("\n\n")
-for i in result:
-    print(f"Name: {i["NAME"]}-{i["VERSION"]}\n\nDescription:\n{i["DESC"]}\n\nURL: {i["URL"]}\n\n")
-"""
+
