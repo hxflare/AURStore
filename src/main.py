@@ -27,6 +27,7 @@ tabs.pack(fill=tk.BOTH, expand=True)
 maxammount=1000
 selectedHelper="yay"
 helperSpreadsheet={"yay": "-S"}
+pacm=PacmanHandler()
 try:
     for child in tabs.winfo_children():
         if isinstance(child, cutk.CTkSegmentedButton):
@@ -41,27 +42,19 @@ try:
 except:
     pass
 # open the tab
-def set_tab(value):
-    print(f"opened tab: {value}")
-    tabs.set(value)
-# actual search
-def search_for():
-    query = searchEntry.get()
-    print(f"searching for: {query}") 
-    for child in searchResults.winfo_children():
-        child.destroy()
-    if query != "":
-        url = f"https://aur.archlinux.org/rpc/?v=5&type=search&arg={query}&limit=100"
-        response = requests.get(url)
-        data = response.json()
-        if data["type"] == "search":
-            ammount = 0
-            data["results"].sort(key=lambda pkg: pkg.get("Popularity", 0), reverse=True)
-            for pkg in data["results"]:
-                if ammount <= maxammount:
+def search_aur(query):
+    url = f"https://aur.archlinux.org/rpc/?v=5&type=search&arg={query}&limit=100"
+    response = requests.get(url)
+    data = response.json()
+    if data["type"] == "search":
+        ammount = 0
+        data["results"].sort(key=lambda pkg: pkg.get("Popularity", 0), reverse=True)
+        for pkg in data["results"]:
+            if ammount <= maxammount:
                     def download_pkg(name=pkg["Name"]):
                         print("downloading package "+name)
-                        commandOutput=subprocess.run([selectedHelper, helperSpreadsheet[selectedHelper],name],capture_output=True,text=True)
+                        print([selectedHelper, helperSpreadsheet[selectedHelper],name])
+                        commandOutput=subprocess.run([selectedHelper, helperSpreadsheet[selectedHelper],"--noconfirm",name],capture_output=True,text=True)
                         print("command output: "+commandOutput.stdout)
                     def open_description(url=pkg["URL"]):
                         tabs.set("Description")
@@ -82,7 +75,7 @@ def search_for():
                         threading.Thread(target=load_html, daemon=True).start()                    
                     resultFrame = cutk.CTkFrame(
                         searchResults,
-                        height=70,
+                        height=200,
                         width=340,
                         corner_radius=10,
                         fg_color="#636363"
@@ -106,12 +99,14 @@ def search_for():
                     info.pack(side=tk.BOTTOM,padx=30,anchor=tk.SE,pady=20)
                     download.pack(side=tk.TOP,padx=30,anchor=tk.NE,pady=20)
                     resultFrame.pack(padx=10, pady=10, fill=tk.X)
+                    resultFrame.pack_propagate(False)
                     result = cutk.CTkLabel(
                         master=resultFrame,
                         text_color="white",
                         font=("Arial", 14),
-                        text=f"{pkg['Name']} {pkg['Version']}",
+                        text=f"{pkg['Name']}-{pkg['Version']}",
                         width=300,
+                        justify="left",
                         corner_radius=10
                     )
                     Desc = cutk.CTkLabel(
@@ -120,13 +115,102 @@ def search_for():
                         text=f"Description: {pkg['Description']}",
                         corner_radius=10,
                         width=300,
+                        height=150,
                         justify="left",
                         wraplength=450
                     )
-                    result.pack(pady=10, padx=10, side=tk.LEFT, anchor=tk.NW)
-                    Desc.pack(pady=20, padx=10, side=tk.LEFT, anchor=tk.SE)
-                    ammount += 1
-            print(f"search ended, found {ammount} results")
+                    result.pack(side=tk.LEFT, anchor=tk.NW)
+                    Desc.pack(side=tk.LEFT, anchor=tk.SE)
+                    ammount += 1   
+            print(f"search ended, found {ammount} results") 
+def search_pacman(query):
+    pkglist=pacm.search_db(query)
+    for pkg in pkglist:
+        def download_pkg(name=pkg["NAME"]):
+            print("downloading package "+name)
+            print("sudo pacman -S --noconfirm ",name)
+            commandOutput=subprocess.run(["sudo","pacman", "-S","--noconfirm",name],capture_output=True,text=True)
+
+            print("command output: "+commandOutput.stdout)
+        def open_description(url=pkg["URL"]):
+            tabs.set("Description")
+            htmltext.set_html("") 
+            progressbar=cutk.CTkProgressBar(
+                tabs.tab("Description"),
+                mode="indeterminate",
+                indeterminate_speed=0.1
+            )
+            progressbar.pack()
+            progressbar.start()
+            ui.update_idletasks() 
+            def load_html():
+                html=html=descparse.getHtml(url)   
+                ui.after(0, lambda: (
+                    htmltext.set_html(html),
+                    progressbar.destroy()
+                ))
+            threading.Thread(target=load_html, daemon=True).start()                    
+        resultFrame = cutk.CTkFrame(
+            searchResults,
+            height=200,
+            width=340,
+            corner_radius=10,
+            fg_color="#636363"
+        )
+        download = cutk.CTkButton(
+            resultFrame, 
+            text="D", 
+            fg_color="green",
+            command=download_pkg,
+            height=30,
+            width=30,
+            corner_radius=100)
+        info=cutk.CTkButton(
+            resultFrame,text="I",
+            fg_color="orange",
+            text_color="white",
+            height=30,width=30,
+            corner_radius=100,
+            command=open_description,
+            )
+        info.pack(side=tk.BOTTOM,padx=30,anchor=tk.SE,pady=20)
+        download.pack(side=tk.TOP,padx=30,anchor=tk.NE,pady=20)
+        resultFrame.pack(padx=10, pady=10, fill=tk.X)
+        resultFrame.pack_propagate(False)
+        result = cutk.CTkLabel(
+            master=resultFrame,
+            text_color="white",
+            font=("Arial", 14),
+            text=f"{pkg['NAME']}-{pkg['VERSION']}",
+            width=300,
+            justify="left",
+            corner_radius=10
+        )
+        Desc = cutk.CTkLabel(
+            master=resultFrame,
+            text_color="white",
+            text=f"Description: {pkg['DESC']}",
+            corner_radius=10,
+            width=300,
+            height=150,
+            justify="left",
+            wraplength=450
+        )
+        result.pack( side=tk.LEFT, anchor=tk.NW)
+        Desc.pack( side=tk.LEFT, anchor=tk.SE) 
+def set_tab(value):
+    print(f"opened tab: {value}")
+    tabs.set(value)
+# actual search
+def search_for():
+    query = searchEntry.get()
+    print(f"searching for: {query}") 
+    for child in searchResults.winfo_children():
+        child.destroy()
+    if query != "":
+        search_pacman(query)
+        search_aur(query)
+            
 # why doesnt ctkscrollableframe have a mousewheel scrolling function?
 def on_mousewheel(event):
     if event.num == 4:
