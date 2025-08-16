@@ -12,7 +12,7 @@ from pacman import PacmanHandler
 descparse=Desc()
 cutk.set_appearance_mode("system")
 cutk.set_default_color_theme("blue")
-# warning: ass code below
+#🥀
 
 ui = cutk.CTk()
 ui.geometry("1000x700")
